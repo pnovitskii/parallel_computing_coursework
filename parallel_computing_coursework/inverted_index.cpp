@@ -101,6 +101,10 @@ void InvertedIndex::show() {
 
 void InvertedIndex::find(const std::string& mWord) {
 	auto result = hashMap.find(mWord);
+	if (result == hashMap.end()) {
+		std::cout << "No such entry!\n";
+		return;
+	}
 	auto [word, files] = *result;
 	std::sort(files.begin(), files.end());
 	auto last = std::unique(files.begin(), files.end());

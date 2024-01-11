@@ -13,6 +13,8 @@
 *.tlog
 *.obj
 Debug
+Release
+neg
 # User-specific files (Mono Auto Generated)
 mono_crash.*
 

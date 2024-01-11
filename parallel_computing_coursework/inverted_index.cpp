@@ -4,8 +4,12 @@ bool checkDirectory(std::filesystem::path path) {
 	return std::filesystem::exists(path) && std::filesystem::is_directory(path);
 }
 
-std::vector<std::string> tokenizeFile(const std::filesystem::directory_entry& entry) {
-	
+std::vector<std::filesystem::directory_entry> getEntries(const std::filesystem::path& path) {
+	std::vector<std::filesystem::directory_entry> entries;
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+		entries.push_back(entry);
+	}
+	return entries;
 }
 
 InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
@@ -13,10 +17,9 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 		std::cout << "Error: directory does not exist.\n";
 		return;
 	}
-	std::vector<std::filesystem::directory_entry> entries;
-	for (const auto& entry : std::filesystem::directory_iterator(path)) {
-		entries.push_back(entry);
-	}
+	//
+	auto entries = getEntries(path);
+	
 	std::cout << "Files: " << entries.size() << std::endl;
 
 	size_t totalFiles = entries.size();

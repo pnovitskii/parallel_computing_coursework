@@ -12,6 +12,45 @@ std::vector<std::filesystem::directory_entry> getEntries(const std::filesystem::
 	return entries;
 }
 
+void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) {
+	if (!std::filesystem::is_regular_file(entry)) {
+		std::cout << "Error!\n";
+	}
+	std::filesystem::path filePath = entry.path();
+	std::fstream file(filePath.string());
+	if (!file.is_open()) {
+		std::cout << "Error: Can't open file.\n";
+	}
+	std::string line;
+	while (std::getline(file, line)) {
+		// to lower
+		std::transform(line.begin(), line.end(), line.begin(), [](unsigned char c) { return std::tolower(c); });
+		// delete punctuation
+		try {
+			// Set the locale to a known, standard locale
+			std::locale::global(std::locale("en_US.UTF-8"));
+
+			// Remove punctuation characters
+			line.erase(std::remove_if(line.begin(), line.end(), [](char c) {
+				// Check if c is a punctuation character
+				return std::ispunct(static_cast<unsigned char>(c));
+				}), line.end());
+		}
+		catch (const std::exception& e) {
+			std::cerr << "Exception caught: " << e.what() << std::endl;
+		}
+
+		// tokenizing
+		std::istringstream stream(line);
+		std::vector<std::string> tokens{ std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>() };
+
+		for (const auto& token : tokens) {
+			auto it = hashMap.find(token);
+			hashMap[token].push_back(entry.path().filename().string());
+		}
+	}
+}
+
 InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	if (!checkDirectory(path)) {
 		std::cout << "Error: directory does not exist.\n";
@@ -29,63 +68,18 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
 		return a.path().filename().string() < b.path().filename().string();
 		});
+
 	for (const auto& entry : entries) {
-		if (!std::filesystem::is_regular_file(entry)) {
-			std::cout << "Error!\n";
+		processEntry(entry);
+
+		++processedFiles;
+
+		// Update progress every updateInterval files
+		if (processedFiles % updateInterval == 0 || processedFiles == totalFiles) {
+			float progress = static_cast<float>(processedFiles) / totalFiles * 100.0;
+			std::cout << "Progress: " << progress << "% (" << processedFiles << "/" << totalFiles << " files)\n";
 		}
-		std::filesystem::path filePath = entry.path();
-		std::fstream file(filePath.string());
-		if (!file.is_open()) {
-			std::cout << "Error: Can't open file.\n";
-		}
-		std::string line;
-		while (std::getline(file, line)) {
-			// to lower
-			std::transform(line.begin(), line.end(), line.begin(), [](unsigned char c) { return std::tolower(c); });
-			// delete punctuation
-			try {
-				// Set the locale to a known, standard locale
-				std::locale::global(std::locale("en_US.UTF-8"));
-
-				// Remove punctuation characters
-				line.erase(std::remove_if(line.begin(), line.end(), [](char c) {
-					// Check if c is a punctuation character
-					return std::ispunct(static_cast<unsigned char>(c));
-					}), line.end());
-			}
-			catch (const std::exception& e) {
-				std::cerr << "Exception caught: " << e.what() << std::endl;
-			}
-
-			// tokenizing
-			std::istringstream stream(line);
-			std::vector<std::string> tokens{ std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>() };
-
-			for (const auto& token : tokens) {
-				auto it = hashMap.find(token);
-				//if (it == hashMap.end()) {
-					// Ключ не найден, можно вставить новую пару
-					//hashMap[token].push_back(entry.path().filename().string());
-					//std::cout << "Inserted: Key=" << token << ", Value=" << path.string() << std::endl;
-				//}
-				hashMap[token].push_back(entry.path().filename().string());
-				//std::cout << token << std::endl;
-				//hashMap[token].push_back(path.string());
-			}
-
-			++processedFiles;
-
-			// Update progress every updateInterval files
-			if (processedFiles % updateInterval == 0 || processedFiles == totalFiles) {
-				float progress = static_cast<float>(processedFiles) / totalFiles * 100.0;
-				std::cout << "Progress: " << progress << "% (" << processedFiles << "/" << totalFiles << " files)\n";
-			}
-		}
-		//std::cout << ".";
 	}
-	//std::cout << "\n";
-	
-	
 }
 
 void InvertedIndex::show() {
@@ -110,7 +104,7 @@ void InvertedIndex::find(const std::string& mWord) {
 	auto last = std::unique(files.begin(), files.end());
 	std::size_t uniqueCount = std::distance(files.begin(), last);
 	std::cout << "Word: " << word << std::endl;
-	std::cout << "Found " << files.size() << " entries in " << uniqueCount << " file(s)<<.\n";
+	std::cout << "Found " << files.size() << " entries in " << uniqueCount << " file" << (uniqueCount > 1 ? "s" : "") << ".\n";
 	
 	//for (const auto& file : files) {
 		//std::cout << file << std::endl;

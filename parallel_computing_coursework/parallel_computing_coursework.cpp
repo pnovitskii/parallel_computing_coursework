@@ -7,6 +7,6 @@ int main()
     std::cout << std::filesystem::current_path().string() << std::endl;
     InvertedIndex index(path);
     //index.show();
-    index.find("he's");
+    index.find("he");
 }
 

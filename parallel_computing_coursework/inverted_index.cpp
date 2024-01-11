@@ -4,6 +4,10 @@ bool checkDirectory(std::filesystem::path path) {
 	return std::filesystem::exists(path) && std::filesystem::is_directory(path);
 }
 
+std::vector<std::string> tokenizeFile(const std::filesystem::directory_entry& entry) {
+	
+}
+
 InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	if (!checkDirectory(path)) {
 		std::cout << "Error: directory does not exist.\n";
@@ -13,6 +17,12 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {
 		entries.push_back(entry);
 	}
+	std::cout << "Files: " << entries.size() << std::endl;
+
+	size_t totalFiles = entries.size();
+	size_t processedFiles = 0;
+	size_t updateInterval = totalFiles / 100;
+
 	std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
 		return a.path().filename().string() < b.path().filename().string();
 		});
@@ -43,10 +53,11 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 			catch (const std::exception& e) {
 				std::cerr << "Exception caught: " << e.what() << std::endl;
 			}
-			
+
 			// tokenizing
 			std::istringstream stream(line);
 			std::vector<std::string> tokens{ std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>() };
+
 			for (const auto& token : tokens) {
 				auto it = hashMap.find(token);
 				//if (it == hashMap.end()) {
@@ -57,6 +68,14 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 				hashMap[token].push_back(entry.path().filename().string());
 				//std::cout << token << std::endl;
 				//hashMap[token].push_back(path.string());
+			}
+
+			++processedFiles;
+
+			// Update progress every updateInterval files
+			if (processedFiles % updateInterval == 0 || processedFiles == totalFiles) {
+				float progress = static_cast<float>(processedFiles) / totalFiles * 100.0;
+				std::cout << "Progress: " << progress << "% (" << processedFiles << "/" << totalFiles << " files)\n";
 			}
 		}
 		//std::cout << ".";

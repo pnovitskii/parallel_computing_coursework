@@ -11,8 +11,9 @@
 
 class InvertedIndex {
 public:
-	InvertedIndex(std::string mpath);
+	InvertedIndex(std::string folderPath);
 	void show();
+	void find(const std::string& word);
 
 private:
 	std::unordered_map<std::string, std::vector<std::string>> hashMap;

@@ -2,26 +2,70 @@
 
 using namespace indexing;
 
-[[nodiscard]] bool checkDirectory(std::filesystem::path path) {
+[[nodiscard]] bool checkDirectory(const std::filesystem::path& path) {
 	return std::filesystem::exists(path) && std::filesystem::is_directory(path);
 }
 
 [[nodiscard]] std::vector<std::filesystem::directory_entry> getEntries(const std::filesystem::path& path) {
 	std::vector<std::filesystem::directory_entry> entries;
-	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+	for (auto entry : std::filesystem::directory_iterator(path)) {
 		entries.push_back(entry);
 	}
 	return entries;
 }
 
+InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
+	if (!checkDirectory(path)) {
+		std::cout << "Error: directory does not exist.\n";
+		return;
+	}
+	getEntries(path);
+	auto entries = getEntries(path);
+	
+	std::cout << "Files: " << entries.size() << std::endl;
+
+	ProgressBar progressBar(entries.size(), 100);
+
+	std::sort(std::execution::par, entries.begin(), entries.end(), [](const auto& a, const auto& b) {
+		return a.path().filename().string() < b.path().filename().string();
+		});
+	// Разбиваем вектор на чанки
+	int numThreads = 8;
+	size_t chunkSize = entries.size() / numThreads;
+	std::vector<std::vector<std::filesystem::directory_entry>> chunks;
+	auto start = entries.begin();
+	while (start != entries.end()) {
+		auto end = std::next(start, std::min(chunkSize, static_cast<size_t>(std::distance(start, entries.end()))));
+		chunks.emplace_back(start, end);
+		start = end;
+	}
+	std::vector<std::jthread> threads;
+	for (int i = 0; i < numThreads; i++) {
+		threads.emplace_back([this, &progressBar, &chunks, i]() {
+			for (const auto& entry : chunks[i]) {
+				processEntry(entry);
+				progressBar.update();
+			}
+			std::cout << i << " is done!\n"; 
+		});
+			
+	}
+	/*for (auto x : threads) {
+		x.join();
+	}*/
+}
+
 void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) {
+	std::lock_guard<std::mutex> lock(mutex);
 	if (!std::filesystem::is_regular_file(entry)) {
 		std::cout << "Error!\n";
+		return;
 	}
 	std::filesystem::path filePath = entry.path();
 	std::fstream file(filePath.string());
 	if (!file.is_open()) {
 		std::cout << "Error: Can't open file.\n";
+		return;
 	}
 	std::string line;
 	while (std::getline(file, line)) {
@@ -48,30 +92,9 @@ void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) 
 
 		for (const auto& token : tokens) {
 			auto it = hashMap.find(token);
+			
 			hashMap[token].push_back(entry.path().filename().string());
 		}
-	}
-}
-
-InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
-	if (!checkDirectory(path)) {
-		std::cout << "Error: directory does not exist.\n";
-		return;
-	}
-	
-	auto entries = getEntries(path);
-	
-	std::cout << "Files: " << entries.size() << std::endl;
-
-	ProgressBar progressBar(entries.size(), 100);
-
-	std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
-		return a.path().filename().string() < b.path().filename().string();
-		});
-
-	for (const auto& entry : entries) {
-		processEntry(entry);
-		progressBar.update();
 	}
 }
 
@@ -92,7 +115,6 @@ std::vector<std::string> InvertedIndex::find(const std::string& mWord) {
 		return {};
 	}
 	auto [word, files] = *result;
-	std::sort(files.begin(), files.end());
+	std::sort(std::execution::par, files.begin(), files.end());
 	return files;
 }
-

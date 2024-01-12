@@ -1,7 +1,6 @@
 ﻿#include "inverted_index.h"
 
 inline constexpr auto path = "neg";
-inline constexpr auto word = "he";
 
 int main()
 {
@@ -9,6 +8,9 @@ int main()
     indexing::InvertedIndex index(path);
 
     //index.show();
+    std::string word;
+    std::cout << "Enter word: ";
+    std::cin >> word;
     auto result = index.find(word);
     if (result.empty()) {
         std::cout << "No such entry!\n";

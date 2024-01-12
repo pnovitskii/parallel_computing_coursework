@@ -8,6 +8,11 @@
 #include <filesystem>
 #include <sstream>
 #include <cctype>
+#include <execution>
+#include <thread>
+#include <mutex>
+#include <algorithm>
+
 #include "progress_bar.h"
 
 namespace indexing {
@@ -21,6 +26,7 @@ public:
 private:
 	std::unordered_map<std::string, std::vector<std::string>> hashMap;
 	std::filesystem::path path;
+	std::mutex mutex;
 
 	void processEntry(const std::filesystem::directory_entry& entry);
 };

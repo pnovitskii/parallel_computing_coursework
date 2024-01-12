@@ -1,8 +1,10 @@
 #pragma once
 
+namespace indexing {
+
 class ProgressBar {
 public:
-	ProgressBar(int total, int interval) : total(total){
+	ProgressBar(int total, int interval) : total(total) {
 		updateInterval = total / interval;
 	}
 	void update() {
@@ -19,3 +21,5 @@ private:
 	size_t processed = 0;
 	size_t updateInterval;
 };
+
+} // namespace

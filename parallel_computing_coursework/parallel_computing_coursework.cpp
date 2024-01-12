@@ -6,7 +6,7 @@ inline constexpr auto word = "he";
 int main()
 {
     std::cout << std::filesystem::current_path().string() << std::endl;
-    InvertedIndex index(path);
+    indexing::InvertedIndex index(path);
     //index.show();
     auto result = index.find(word);
     auto last = std::unique(result.begin(), result.end());
@@ -14,4 +14,3 @@ int main()
     std::cout << "Word: " << word << std::endl;
     std::cout << "Found " << result.size() << " entries in " << uniqueCount << " file" << (uniqueCount > 1 ? "s" : "") << ".\n";
 }
-

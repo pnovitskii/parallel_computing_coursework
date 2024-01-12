@@ -10,6 +10,8 @@
 #include <cctype>
 #include "progress_bar.h"
 
+namespace indexing {
+
 class InvertedIndex {
 public:
 	InvertedIndex(std::string folderPath);
@@ -21,3 +23,6 @@ private:
 	std::unordered_map<std::string, std::vector<std::string>> hashMap;
 	std::filesystem::path path;
 };
+
+} // namespace
+

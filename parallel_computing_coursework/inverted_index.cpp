@@ -1,5 +1,7 @@
 #include "inverted_index.h"
 
+using namespace indexing;
+
 bool checkDirectory(std::filesystem::path path) {
 	return std::filesystem::exists(path) && std::filesystem::is_directory(path);
 }
@@ -69,7 +71,6 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 
 	for (const auto& entry : entries) {
 		processEntry(entry);
-
 		progressBar.update();
 	}
 }

@@ -14,7 +14,7 @@ class InvertedIndex {
 public:
 	InvertedIndex(std::string folderPath);
 	void show();
-	void find(const std::string& mWord);
+	[[nodiscard]] std::vector<std::string> find(const std::string& mWord);
 	void processEntry(const std::filesystem::directory_entry& entry);
 
 private:

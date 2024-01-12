@@ -62,9 +62,6 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	std::cout << "Files: " << entries.size() << std::endl;
 
 	ProgressBar progressBar(entries.size(), 100);
-	/*size_t totalFiles = entries.size();
-	size_t processedFiles = 0;
-	size_t updateInterval = totalFiles / 100;*/
 
 	std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
 		return a.path().filename().string() < b.path().filename().string();
@@ -74,7 +71,6 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 		processEntry(entry);
 
 		progressBar.update();
-		
 	}
 }
 
@@ -89,17 +85,14 @@ void InvertedIndex::show() {
 	}
 }
 
-void InvertedIndex::find(const std::string& mWord) {
+std::vector<std::string> InvertedIndex::find(const std::string& mWord) {
 	auto result = hashMap.find(mWord);
 	if (result == hashMap.end()) {
 		std::cout << "No such entry!\n";
-		return;
+		return {};
 	}
 	auto [word, files] = *result;
 	std::sort(files.begin(), files.end());
-	auto last = std::unique(files.begin(), files.end());
-	std::size_t uniqueCount = std::distance(files.begin(), last);
-	std::cout << "Word: " << word << std::endl;
-	std::cout << "Found " << files.size() << " entries in " << uniqueCount << " file" << (uniqueCount > 1 ? "s" : "") << ".\n";
+	return files;
 }
 

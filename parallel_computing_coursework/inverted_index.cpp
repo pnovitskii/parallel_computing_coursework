@@ -14,7 +14,7 @@ using namespace indexing;
 	return entries;
 }
 
-InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
+InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : path(folderPath), numThreads(numThreads) {
 	if (!checkDirectory(path)) {
 		std::cout << "Error: directory does not exist.\n";
 		return;
@@ -24,13 +24,12 @@ InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
 	
 	std::cout << "Files: " << entries.size() << std::endl;
 
-	ProgressBar progressBar(entries.size(), 100);
+	//ProgressBar progressBar(entries.size(), 50);
 
 	std::sort(std::execution::par, entries.begin(), entries.end(), [](const auto& a, const auto& b) {
 		return a.path().filename().string() < b.path().filename().string();
 		});
-	// Разбиваем вектор на чанки
-	int numThreads = 8;
+	
 	size_t chunkSize = entries.size() / numThreads;
 	std::vector<std::vector<std::filesystem::directory_entry>> chunks;
 	auto start = entries.begin();
@@ -41,10 +40,10 @@ InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
 	}
 	std::vector<std::jthread> threads;
 	for (int i = 0; i < numThreads; i++) {
-		threads.emplace_back([this, &progressBar, &chunks, i]() {
+		threads.emplace_back([this, &chunks, i]() {
 			for (const auto& entry : chunks[i]) {
 				processEntry(entry);
-				progressBar.update();
+				//progressBar.update();
 			}
 			std::cout << i << " is done!\n"; 
 		});
@@ -56,7 +55,7 @@ InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
 }
 
 void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) {
-	std::lock_guard<std::mutex> lock(mutex);
+	
 	if (!std::filesystem::is_regular_file(entry)) {
 		std::cout << "Error!\n";
 		return;
@@ -91,6 +90,7 @@ void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) 
 		std::vector<std::string> tokens{ std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>() };
 
 		for (const auto& token : tokens) {
+			std::lock_guard<std::mutex> lock(mutex);
 			auto it = hashMap.find(token);
 			
 			hashMap[token].push_back(entry.path().filename().string());

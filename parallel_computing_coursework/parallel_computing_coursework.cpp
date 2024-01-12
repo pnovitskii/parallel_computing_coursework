@@ -7,8 +7,13 @@ int main()
 {
     std::cout << std::filesystem::current_path().string() << std::endl;
     indexing::InvertedIndex index(path);
+
     //index.show();
     auto result = index.find(word);
+    if (result.empty()) {
+        std::cout << "No such entry!\n";
+        return 0;
+    }
     auto last = std::unique(result.begin(), result.end());
     std::size_t uniqueCount = std::distance(result.begin(), last);
     std::cout << "Word: " << word << std::endl;

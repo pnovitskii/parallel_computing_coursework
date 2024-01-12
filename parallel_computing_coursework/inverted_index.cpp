@@ -2,11 +2,11 @@
 
 using namespace indexing;
 
-bool checkDirectory(std::filesystem::path path) {
+[[nodiscard]] bool checkDirectory(std::filesystem::path path) {
 	return std::filesystem::exists(path) && std::filesystem::is_directory(path);
 }
 
-std::vector<std::filesystem::directory_entry> getEntries(const std::filesystem::path& path) {
+[[nodiscard]] std::vector<std::filesystem::directory_entry> getEntries(const std::filesystem::path& path) {
 	std::vector<std::filesystem::directory_entry> entries;
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {
 		entries.push_back(entry);
@@ -53,12 +53,12 @@ void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) 
 	}
 }
 
-InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
+InvertedIndex::InvertedIndex(const std::string& folderPath) : path(folderPath) {
 	if (!checkDirectory(path)) {
 		std::cout << "Error: directory does not exist.\n";
 		return;
 	}
-	//
+	
 	auto entries = getEntries(path);
 	
 	std::cout << "Files: " << entries.size() << std::endl;
@@ -89,7 +89,6 @@ void InvertedIndex::show() {
 std::vector<std::string> InvertedIndex::find(const std::string& mWord) {
 	auto result = hashMap.find(mWord);
 	if (result == hashMap.end()) {
-		std::cout << "No such entry!\n";
 		return {};
 	}
 	auto [word, files] = *result;

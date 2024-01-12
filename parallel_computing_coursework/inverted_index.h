@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <sstream>
 #include <cctype>
+#include "progress_bar.h"
 
 class InvertedIndex {
 public:

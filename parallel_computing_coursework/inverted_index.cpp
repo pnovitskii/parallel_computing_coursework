@@ -61,9 +61,10 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	
 	std::cout << "Files: " << entries.size() << std::endl;
 
-	size_t totalFiles = entries.size();
+	ProgressBar progressBar(entries.size(), 100);
+	/*size_t totalFiles = entries.size();
 	size_t processedFiles = 0;
-	size_t updateInterval = totalFiles / 100;
+	size_t updateInterval = totalFiles / 100;*/
 
 	std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
 		return a.path().filename().string() < b.path().filename().string();
@@ -72,13 +73,8 @@ InvertedIndex::InvertedIndex(std::string folderPath) : path(folderPath) {
 	for (const auto& entry : entries) {
 		processEntry(entry);
 
-		++processedFiles;
-
-		// Update progress every updateInterval files
-		if (processedFiles % updateInterval == 0 || processedFiles == totalFiles) {
-			float progress = static_cast<float>(processedFiles) / totalFiles * 100.0;
-			std::cout << "Progress: " << progress << "% (" << processedFiles << "/" << totalFiles << " files)\n";
-		}
+		progressBar.update();
+		
 	}
 }
 
@@ -105,8 +101,5 @@ void InvertedIndex::find(const std::string& mWord) {
 	std::size_t uniqueCount = std::distance(files.begin(), last);
 	std::cout << "Word: " << word << std::endl;
 	std::cout << "Found " << files.size() << " entries in " << uniqueCount << " file" << (uniqueCount > 1 ? "s" : "") << ".\n";
-	
-	//for (const auto& file : files) {
-		//std::cout << file << std::endl;
-	//}
 }
+

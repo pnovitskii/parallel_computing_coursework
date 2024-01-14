@@ -8,14 +8,30 @@
 #include <filesystem>
 #include <sstream>
 #include <cctype>
+#include <execution>
+#include <thread>
+#include <mutex>
+#include <algorithm>
+#include <chrono>
+
+#include "progress_bar.h"
+
+namespace indexing {
 
 class InvertedIndex {
 public:
-	InvertedIndex(std::string folderPath);
+	InvertedIndex(const std::string& folderPath, int numThreads = 1);
 	void show();
-	void find(const std::string& word);
+	[[nodiscard]] std::vector<std::string> find(const std::string& mWord);
 
 private:
 	std::unordered_map<std::string, std::vector<std::string>> hashMap;
 	std::filesystem::path path;
+	std::mutex mutex;
+	int numThreads;
+
+	void processEntry(const std::filesystem::directory_entry& entry);
 };
+
+} // namespace
+

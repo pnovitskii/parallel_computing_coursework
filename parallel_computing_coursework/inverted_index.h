@@ -15,6 +15,9 @@
 #include <chrono>
 
 #include "progress_bar.h"
+#include "thread_pool.h"
+
+#define THREAD_POOL
 
 namespace indexing {
 
@@ -29,6 +32,10 @@ private:
 	std::filesystem::path path;
 	std::mutex mutex;
 	int numThreads;
+
+#ifdef THREAD_POOL
+	ThreadPool threadPool;
+#endif
 
 	void processEntry(const std::filesystem::directory_entry& entry);
 };

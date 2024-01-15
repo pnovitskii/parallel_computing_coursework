@@ -14,7 +14,8 @@ using namespace indexing;
 	return entries;
 }
 
-InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : path(folderPath), numThreads(numThreads) {
+InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : path(folderPath), numThreads(numThreads), threadPool(numThreads) {
+	//threadPool = ThreadPool(numThreads);
 	if (!checkDirectory(path)) {
 		std::cout << "Error: directory does not exist.\n";
 		return;
@@ -38,6 +39,21 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 		chunks.emplace_back(start, end);
 		start = end;
 	}
+#ifdef THREAD_POOL
+	for (auto& chunk : chunks) {
+		for (auto& entry : chunk) {
+			threadPool.addTask(Task([this, &entry]() { processEntry(entry); }));
+		}
+	}
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		threadPool.lock();
+		if (threadPool.empty()) {
+			break;
+		}
+	}
+
+#else
 	std::vector<std::jthread> threads;
 	for (int i = 0; i < numThreads; i++) {
 		threads.emplace_back([this, &chunks, i]() {
@@ -49,6 +65,7 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 		});
 			
 	}
+#endif
 	/*for (auto x : threads) {
 		x.join();
 	}*/
@@ -57,8 +74,8 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) {
 	
 	if (!std::filesystem::is_regular_file(entry)) {
-		std::cout << "Error!\n";
-		return;
+		std::cout << "Error!(1)\n";
+		throw std::exception();
 	}
 	std::filesystem::path filePath = entry.path();
 	std::fstream file(filePath.string());

@@ -1,7 +1,7 @@
 ﻿#include <iomanip>
 #include "inverted_index.h"
 
-inline constexpr auto path = "neg";
+inline constexpr auto path = "datasets";
 
 void testCase(int numThreads) {
     std::cout << "THREADS: " << std::setw(3) << numThreads << " ";// << endl << endl;
@@ -15,7 +15,7 @@ void testCase(int numThreads) {
 }
 
 void test() {
-    for (int i = 1; i <= 16; i *= 2)
+    for (int i = 1; i <= 16; i++)
         testCase(i);
 }
 

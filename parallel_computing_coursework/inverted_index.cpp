@@ -14,15 +14,15 @@ using namespace indexing;
 	return entries;
 }
 
-InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : path(folderPath), numThreads(numThreads) {
-	if (!checkDirectory(path)) {
+void InvertedIndex::index(const std::string& folderPath, int numThreads) {
+	if (!checkDirectory(folderPath)) {
 		std::cout << "Error: directory does not exist.\n";
 		return;
 	}
-	getEntries(path);
-	auto entries = getEntries(path);
 	
-	std::cout << "Files: " << entries.size() << std::endl;
+	auto entries = getEntries(folderPath);
+	
+	//std::cout << "Files: " << entries.size() << std::endl;
 
 	//ProgressBar progressBar(entries.size(), 50);
 
@@ -38,6 +38,27 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 		chunks.emplace_back(start, end);
 		start = end;
 	}
+
+	
+
+#ifdef THREAD_POOL
+
+	ThreadPool threadPool(numThreads);
+
+	for (auto& chunk : chunks) {
+		for (auto& entry : chunk) {
+			threadPool.addTask(Task([this, &entry]() { processEntry(entry); }));
+		}
+	}
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		threadPool.lock();
+		if (threadPool.empty()) {
+			break;
+		}
+	}
+
+#else
 	std::vector<std::jthread> threads;
 	for (int i = 0; i < numThreads; i++) {
 		threads.emplace_back([this, &chunks, i]() {
@@ -49,16 +70,14 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 		});
 			
 	}
-	/*for (auto x : threads) {
-		x.join();
-	}*/
+#endif
 }
 
 void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) {
 	
 	if (!std::filesystem::is_regular_file(entry)) {
-		std::cout << "Error!\n";
-		return;
+		std::cout << "Error!(1)\n";
+		throw std::exception();
 	}
 	std::filesystem::path filePath = entry.path();
 	std::fstream file(filePath.string());
@@ -91,8 +110,7 @@ void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) 
 
 		for (const auto& token : tokens) {
 			std::lock_guard<std::mutex> lock(mutex);
-			auto it = hashMap.find(token);
-			
+			//auto it = hashMap.find(token);
 			hashMap[token].push_back(entry.path().filename().string());
 		}
 	}

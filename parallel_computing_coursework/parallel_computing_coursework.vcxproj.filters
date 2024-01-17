@@ -26,7 +26,7 @@
     <ClInclude Include="inverted_index.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="progress_bar.h">
+    <ClInclude Include="thread_pool.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

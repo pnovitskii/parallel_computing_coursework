@@ -13,6 +13,7 @@
 #include <mutex>
 #include <algorithm>
 #include <chrono>
+#include <memory>
 
 #include "progress_bar.h"
 #include "thread_pool.h"
@@ -23,19 +24,13 @@ namespace indexing {
 
 class InvertedIndex {
 public:
-	InvertedIndex(const std::string& folderPath, int numThreads = 1);
+	void index(const std::string& folderPath, int numThreads = 1);
 	void show();
 	[[nodiscard]] std::vector<std::string> find(const std::string& mWord);
 
 private:
 	std::unordered_map<std::string, std::vector<std::string>> hashMap;
-	std::filesystem::path path;
 	std::mutex mutex;
-	int numThreads;
-
-#ifdef THREAD_POOL
-	ThreadPool threadPool;
-#endif
 
 	void processEntry(const std::filesystem::directory_entry& entry);
 };

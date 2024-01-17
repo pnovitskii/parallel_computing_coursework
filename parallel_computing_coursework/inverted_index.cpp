@@ -14,16 +14,15 @@ using namespace indexing;
 	return entries;
 }
 
-InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : path(folderPath), numThreads(numThreads), threadPool(numThreads) {
-	//threadPool = ThreadPool(numThreads);
-	if (!checkDirectory(path)) {
+void InvertedIndex::index(const std::string& folderPath, int numThreads) {
+	if (!checkDirectory(folderPath)) {
 		std::cout << "Error: directory does not exist.\n";
 		return;
 	}
-	getEntries(path);
-	auto entries = getEntries(path);
 	
-	std::cout << "Files: " << entries.size() << std::endl;
+	auto entries = getEntries(folderPath);
+	
+	//std::cout << "Files: " << entries.size() << std::endl;
 
 	//ProgressBar progressBar(entries.size(), 50);
 
@@ -39,7 +38,13 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 		chunks.emplace_back(start, end);
 		start = end;
 	}
+
+	
+
 #ifdef THREAD_POOL
+
+	ThreadPool threadPool(numThreads);
+
 	for (auto& chunk : chunks) {
 		for (auto& entry : chunk) {
 			threadPool.addTask(Task([this, &entry]() { processEntry(entry); }));
@@ -66,9 +71,6 @@ InvertedIndex::InvertedIndex(const std::string& folderPath, int numThreads) : pa
 			
 	}
 #endif
-	/*for (auto x : threads) {
-		x.join();
-	}*/
 }
 
 void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) {
@@ -108,8 +110,7 @@ void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) 
 
 		for (const auto& token : tokens) {
 			std::lock_guard<std::mutex> lock(mutex);
-			auto it = hashMap.find(token);
-			
+			//auto it = hashMap.find(token);
 			hashMap[token].push_back(entry.path().filename().string());
 		}
 	}

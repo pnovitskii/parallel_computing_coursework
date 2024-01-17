@@ -9,7 +9,12 @@ using namespace indexing;
 [[nodiscard]] std::vector<std::filesystem::directory_entry> getEntries(const std::filesystem::path& path) {
 	std::vector<std::filesystem::directory_entry> entries;
 	for (auto entry : std::filesystem::directory_iterator(path)) {
-		entries.push_back(entry);
+		if (!entry.is_directory()) {
+			entries.push_back(entry);
+			continue;
+		}
+		auto subEntries = getEntries(entry);
+		entries.insert(entries.end(), subEntries.begin(), subEntries.end());
 	}
 	return entries;
 }
@@ -22,7 +27,7 @@ void InvertedIndex::index(const std::string& folderPath, int numThreads) {
 	
 	auto entries = getEntries(folderPath);
 	
-	//std::cout << "Files: " << entries.size() << std::endl;
+	//std::cout << "\nFiles: " << entries.size() << std::endl;
 
 	//ProgressBar progressBar(entries.size(), 50);
 
@@ -77,9 +82,19 @@ void InvertedIndex::processEntry(const std::filesystem::directory_entry& entry) 
 	
 	if (!std::filesystem::is_regular_file(entry)) {
 		std::cout << "Error!(1)\n";
-		throw std::exception();
+		return;
+		//throw std::exception();
 	}
-	std::filesystem::path filePath = entry.path();
+	
+	std::filesystem::path filePath;
+	try {
+		filePath = entry.path();
+		// Делайте что-то с filePath
+	}
+	catch (const std::filesystem::filesystem_error& e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+	}
+	//std::filesystem::path filePath = entry.path();
 	std::fstream file(filePath.string());
 	if (!file.is_open()) {
 		std::cout << "Error: Can't open file.\n";

@@ -15,7 +15,7 @@
 Debug
 Release
 neg
-*.vcxproj
+packages
 parallel_computing_coursework/Debug
 # User-specific files (Mono Auto Generated)
 mono_crash.*

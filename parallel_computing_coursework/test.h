@@ -28,7 +28,7 @@ auto measure_time(F func, Args&&... args) -> typename std::enable_if<std::is_voi
     std::cout << " " << duration.count() / 1000 << "." << duration.count() % 1000 << " seconds\n";
 }
 
-void testCase(int numThreads, const std::string& path) {
+void testCase(const std::string& path, int numThreads) {
     std::cout << "THREADS: " << std::setw(3) << numThreads << " ";// << endl << endl;
     indexing::InvertedIndex index;
     measure_time(&indexing::InvertedIndex::index, &index, path, numThreads);

@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="parser.h" />
     <ClInclude Include="inverted_index.h" />
+    <ClInclude Include="server.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="thread_pool.h" />
   </ItemGroup>

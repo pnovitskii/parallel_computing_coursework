@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <boost/asio.hpp>
 #include "inverted_index.h"
-//#include "test.h"
+#include "test.h"
 //#include "server.h"
 
 using namespace boost::asio;
@@ -39,13 +39,15 @@ int main()
     srand(time(NULL));
     indexing::InvertedIndex index;
     Server server;
+    server.connect();
     while (1) {
         //read operation
         std::string message = server.read();
         message.erase(message.size() - 1);
         std::cout << message << std::endl;
         if (message == "test") {
-            index.index(path, 2);
+            //index.index(path, 2);
+            testCase(2, path);
             continue;
         }
         std::cout << "Unknown command. Size: " << message.size() << std::endl;
@@ -53,18 +55,4 @@ int main()
         //send_(socket_, "Hello From Server!");
         //cout << "Servent sent Hello message to Client!" << endl;
     }
-
-
-    //try {
-    //    boost::asio::io_service io_service;
-
-    //    // Start server on port 12345
-    //    TCPServer server(io_service, 12345);
-
-    //    // Run the IO service
-    //    io_service.run();
-    //}
-    //catch (std::exception& e) {
-    //    std::cerr << "Exception: " << e.what() << std::endl;
-    //}
 }

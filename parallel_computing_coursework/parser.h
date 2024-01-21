@@ -11,7 +11,7 @@ std::vector<std::string> tokenizeString(const std::string& inputString) {
 }
 
 enum class CommandType {
-	INDEX,
+	INDEXING,
 };
 
 class Parser {
@@ -20,8 +20,10 @@ public:
 		auto commandTokens = tokenizeString(message);
 		switch (commandTokens.size()) {
 		case 0:
-			break;
 		case 1:
+			if (commandTokens.at(0) == "index") {
+
+			}
 			break;
 		case 2:
 			break;

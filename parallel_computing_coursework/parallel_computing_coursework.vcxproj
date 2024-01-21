@@ -147,7 +147,9 @@
     <ClCompile Include="parallel_computing_coursework.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="parser.h" />
     <ClInclude Include="inverted_index.h" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="thread_pool.h" />
   </ItemGroup>
   <ItemGroup>

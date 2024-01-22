@@ -13,28 +13,20 @@
 
 class Task {
 public:
-    Task(std::function<void()> func) : func(func) {
-        //duration = rand() % 6 + 5; // Generate random duration between 5 and 10 seconds
-        //id++;
-    }
+    Task(std::function<void()> func) : func(func) {}
 
     void operator()() const {
-        //std::string str("Executing task with duration " + std::to_string(duration) + " seconds. Id: " + std::to_string(id) + "\n");
-        //std::cout << str;
-        //std::this_thread::sleep_for(std::chrono::seconds(duration));
         func();
     }
 
     bool operator<(const Task& other) const {
         return id < other.id;
-        //return duration < other.duration; // Shorter tasks have higher priority
     }
     bool operator>(const Task& other) const {
         return id > other.id;
-        //return duration > other.duration; // Shorter tasks have higher priority
     }
-    //int duration;
     int id = rand();
+
 private:
     std::function<void()> func;
 
@@ -62,15 +54,12 @@ public:
 
     void addTask(const Task& task) {
         std::unique_lock<std::mutex> lock(mutex);
-        /*if (queue.size() == 15) {
-            queue.pop();
-        }*/
         queue.push(task);
         condition.notify_one();
     }
     std::vector<std::thread> threads;
-private:
 
+private:
     std::priority_queue<Task, std::vector<Task>, std::less<Task>> queue;
     std::mutex mutex;
     std::condition_variable condition;

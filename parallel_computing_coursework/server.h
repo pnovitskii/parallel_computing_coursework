@@ -15,6 +15,7 @@ private:
     boost::asio::io_context io_context;
     tcp::acceptor acceptor_ = tcp::acceptor(io_context, tcp::endpoint(tcp::v4(), 1234));
     tcp::socket socket_ = tcp::socket(io_context);
+    boost::asio::streambuf buf;
 
     std::string read();
 };

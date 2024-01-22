@@ -6,17 +6,16 @@
 
 inline constexpr auto path = "datasets";
 
+
 int main()
 {
     srand(time(NULL));
     indexing::InvertedIndex index;
     Server server;
-    //server.connect();
+
     while (1) {
-        //read operation
         auto [commandType, params] = server.getCommand().get();
         
-        //std::cout << message << std::endl;
         switch (commandType) {
             case CommandType::IDLE: 
                 break;
@@ -31,8 +30,16 @@ int main()
                 break;
             }
             case CommandType::INDEXING: {
-                index.index(path, 2);
+                int numThreads = 1; 
+                if (!params.empty()) {
+                    int threads = std::stoi(params.at(0));
+                    numThreads = threads > 0 ? threads : 1;
+                }
+                std::cout << "Starting indexing! Threads: " << numThreads << std::endl;
+                index.index(path, numThreads);
+                
                 server.send("Done!");
+                std::cout << "Done!\n";
                 break;
             }
             case CommandType::FIND: {

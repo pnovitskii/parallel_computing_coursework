@@ -18,14 +18,13 @@ Command Server::getCommand() {
     if (!socket_.is_open()) {
         connect();
     }
-    std::string command;
+    std::string command = boost::asio::buffer_cast<const char*>(buf.data());;
     try {
         command = read();
         command.erase(command.size() - 1);
+        std::cout << command << std::endl;
     }
-    catch (...) {
-
-    }
+    catch (...) {}
 
     auto parsedCommand = Parser::parse(command);
     return parsedCommand;

@@ -3,7 +3,7 @@
 #include <vector>
 #include <sstream>
 
-std::vector<std::string> tokenizeString(const std::string& inputString) {
+inline std::vector<std::string> tokenizeString(const std::string& inputString) {
 	std::istringstream stream(inputString);
 	std::vector<std::string> tokens{ std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>() };
 
@@ -14,6 +14,7 @@ enum class CommandType {
 	IDLE,
 	TEST,
 	INDEXING,
+	FIND,
 };
 
 using CommandArguments = std::vector<std::string>;
@@ -42,8 +43,14 @@ public:
 			if (commandTokens.at(0) == "test") {
 				return { CommandType::TEST };
 			}
+			if (commandTokens.at(0) == "index") {
+				return { CommandType::INDEXING };
+			}
 			break;
 		case 2:
+			if (commandTokens.at(0) == "find") {
+				return { CommandType::FIND, commandTokens.at(1) };
+			}
 			break;
 		case 3:
 			break;

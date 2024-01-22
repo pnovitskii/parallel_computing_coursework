@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="inverted_index.cpp" />
     <ClCompile Include="parallel_computing_coursework.cpp" />
+    <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h" />

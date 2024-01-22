@@ -1,11 +1,10 @@
 ﻿#include <iostream>
+#include <sstream>
 #include "inverted_index.h"
 #include "test.h"
 #include "server.h"
 
 inline constexpr auto path = "datasets";
-
-
 
 int main()
 {
@@ -20,9 +19,13 @@ int main()
         std::cout << message << std::endl;
         if (message == "test") {
             int numThreads = 2;
-            std::cout << "THREADS: " << std::setw(3) << numThreads << " ";// << endl << endl;
+            
+            std::ostringstream ss;
+            ss << "THREADS: " << std::setw(3) << numThreads << " ";// << endl << endl;
+            
             indexing::InvertedIndex index;
-            measure_time(&indexing::InvertedIndex::index, &index, path, numThreads);
+            ss << measure_time(&indexing::InvertedIndex::index, &index, path, numThreads).str();
+            server.send(ss.str());
             continue;
         }
         std::cout << "Unknown command. Size: " << message.size() << std::endl;

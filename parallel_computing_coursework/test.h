@@ -1,31 +1,57 @@
 #pragma once
 #include <iostream>
 #include <type_traits>
+#include <sstream>
 #include "inverted_index.h"
 
+//template <typename F, typename... Args>
+//auto measure_time(F func, Args&&... args) -> typename std::enable_if<!std::is_void<typename std::invoke_result<F, Args...>::type>::value, typename std::invoke_result<F, Args...>::type>::type {
+//    auto start = std::chrono::high_resolution_clock::now();
+//
+//    auto result = std::invoke(func, std::forward<Args>(args)...);
+//
+//    auto end = std::chrono::high_resolution_clock::now();
+//    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+//
+//    return result;
+//}
+//
+//template <typename F, typename... Args>
+//auto measure_time(F func, Args&&... args) -> typename std::enable_if<std::is_void<typename std::invoke_result<F, Args...>::type>::value>::type
+//{
+//    auto start = std::chrono::high_resolution_clock::now();
+//
+//    std::invoke(func, std::forward<Args>(args)...);
+//
+//    auto end = std::chrono::high_resolution_clock::now();
+//    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+//    for (int j = 0; j < duration.count() / 200; j++) std::cout << "#";
+//    std::cout << " " << duration.count() / 1000 << "." << duration.count() % 1000 << " seconds\n";
+//    std::ostringstream output;
+//    for (int j = 0; j < duration.count() / 200; j++) {
+//        output << "#";
+//    }
+//    output << " " << duration.count() / 1000 << "." << duration.count() % 1000 << " seconds\n";
+//
+//    return output.str();
+//}
+
 template <typename F, typename... Args>
-auto measure_time(F func, Args&&... args) -> typename std::enable_if<!std::is_void<typename std::invoke_result<F, Args...>::type>::value, typename std::invoke_result<F, Args...>::type>::type {
-    auto start = std::chrono::high_resolution_clock::now();
-
-    auto result = std::invoke(func, std::forward<Args>(args)...);
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-    return result;
-}
-
-template <typename F, typename... Args>
-auto measure_time(F func, Args&&... args) -> typename std::enable_if<std::is_void<typename std::invoke_result<F, Args...>::type>::value>::type
+auto measure_time(F func, Args&&... args) -> std::stringstream
 {
+    std::stringstream output;
     auto start = std::chrono::high_resolution_clock::now();
 
     std::invoke(func, std::forward<Args>(args)...);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    for (int j = 0; j < duration.count() / 200; j++) std::cout << "#";
-    std::cout << " " << duration.count() / 1000 << "." << duration.count() % 1000 << " seconds\n";
+    for (int j = 0; j < duration.count() / 200; j++) {
+        output << "#";
+    }
+    output << " " << duration.count() / 1000 << "." << duration.count() % 1000 << " seconds\n";
+
+    return output;
 }
 
 void testCase(const std::string& path, int numThreads) {

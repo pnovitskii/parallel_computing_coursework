@@ -18,9 +18,13 @@ public:
         return data;
     }
 
-    void send_(boost::asio::ip::tcp::socket& socket, const std::string& message) {
+    void send(const std::string& message) {
+        //socket_.non_blocking(true);
+        //while (1) {
         const std::string msg = message + "\n";
-        boost::asio::write(socket, boost::asio::buffer(message));
+        boost::asio::write(socket_, boost::asio::buffer(msg));
+        //}
+        
     }
 private:
     boost::asio::io_context io_context;

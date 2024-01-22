@@ -14,23 +14,21 @@ int main()
     server.connect();
     while (1) {
         //read operation
-        std::string message = server.read();
-        message.erase(message.size() - 1);
-        std::cout << message << std::endl;
-        if (message == "test") {
+        auto [commandType, params] = server.getCommand().get();
+        
+        //std::cout << message << std::endl;
+        if (commandType == CommandType::TEST) {
             int numThreads = 2;
             
             std::ostringstream ss;
-            ss << "THREADS: " << std::setw(3) << numThreads << " ";// << endl << endl;
-            
-            indexing::InvertedIndex index;
-            ss << measure_time(&indexing::InvertedIndex::index, &index, path, numThreads).str();
+            for (int i = 1; i <= 8; i *= 2) {
+                ss << "THREADS: " << std::setw(3) << i << " ";// << endl << endl;
+                indexing::InvertedIndex index;
+                ss << measure_time(&indexing::InvertedIndex::index, &index, path, i).str();
+            }
             server.send(ss.str());
             continue;
         }
-        std::cout << "Unknown command. Size: " << message.size() << std::endl;
-        //write operation
-        //send_(socket_, "Hello From Server!");
-        //cout << "Servent sent Hello message to Client!" << endl;
+        //std::cout << "Unknown command: " << message << std::endl;
     }
 }

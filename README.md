@@ -18,6 +18,7 @@ Follow the official Boost installation instructions for your platform: [Boost Ge
 ```bash
 git clone https://github.com/your-username/your-project.git
 cd your-project
+```
 
 ### 2. Open the Project in Visual Studio
 

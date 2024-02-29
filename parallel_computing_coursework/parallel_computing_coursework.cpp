@@ -1,40 +1,64 @@
-﻿#include <iomanip>
+﻿#include <iostream>
+#include <sstream>
 #include "inverted_index.h"
+#include "test.h"
+#include "server.h"
 
 inline constexpr auto path = "datasets";
 
-void testCase(int numThreads) {
-    std::cout << "THREADS: " << std::setw(3) << numThreads << " ";// << endl << endl;
-    auto start = std::chrono::high_resolution_clock::now();
-    indexing::InvertedIndex index;
-    index.index(path, numThreads);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    for (int j = 0; j < duration.count() / 200; j++) std::cout << "#";
-    std::cout << " " << duration.count() / 1000 << "." << duration.count() % 1000 << " seconds\n";
-}
-
-void test() {
-    for (int i = 1; i <= 16; i++)
-        testCase(i);
-}
 
 int main()
 {
     srand(time(NULL));
-    test();
     indexing::InvertedIndex index;
-    index.index(path, 4);
-    std::string word;
-    std::cout << "Enter word: ";
-    std::cin >> word;
-    auto result = index.find(word);
-    if (result.empty()) {
-        std::cout << "No such entry!\n";
-        return 0;
+    Server server;
+
+    while (1) {
+        auto [commandType, params] = server.getCommand().get();
+        
+        switch (commandType) {
+            case CommandType::IDLE: 
+                break;
+            case CommandType::TEST: {
+                std::ostringstream ss;
+                for (int i = 1; i <= 8; i *= 2) {
+                    ss << "THREADS: " << std::setw(3) << i << " ";// << endl << endl;
+                    indexing::InvertedIndex index;
+                    ss << measure_time(&indexing::InvertedIndex::index, &index, path, i).str();
+                }
+                server.send(ss.str());
+                break;
+            }
+            case CommandType::INDEXING: {
+                int numThreads = 1; 
+                if (!params.empty()) {
+                    int threads = std::stoi(params.at(0));
+                    numThreads = threads > 0 ? threads : 1;
+                }
+                std::cout << "Starting indexing! Threads: " << numThreads << std::endl;
+                index.index(path, numThreads);
+                
+                server.send("Done!");
+                std::cout << "Done!\n";
+                break;
+            }
+            case CommandType::FIND: {
+                std::ostringstream ss;
+                auto result = index.find(params[0]);
+                if (result.empty()) {
+                    std::cout << "No such entry!\n";
+                    break;
+                }
+                auto last = std::unique(result.begin(), result.end());
+                std::size_t uniqueCount = std::distance(result.begin(), last);
+                ss << "Word: " << params[0] << std::endl;
+                ss << "Found " << result.size() << " entries in " << uniqueCount << " file" << (uniqueCount > 1 ? "s" : "") << ".\n";
+                server.send(ss.str());
+                break;
+            }
+
+        }
+        
+        //std::cout << "Unknown command: " << message << std::endl;
     }
-    auto last = std::unique(result.begin(), result.end());
-    std::size_t uniqueCount = std::distance(result.begin(), last);
-    std::cout << "Word: " << word << std::endl;
-    std::cout << "Found " << result.size() << " entries in " << uniqueCount << " file" << (uniqueCount > 1 ? "s" : "") << ".\n";
 }
